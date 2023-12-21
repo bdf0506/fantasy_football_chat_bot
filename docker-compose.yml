@@ -2,10 +2,14 @@ version: "3.7"
 
 services:
   gamedaybot:
+    container_name: fantasy_bot
     build:
       context: .
-    restart: always
+    volumes:
+      - ./:/usr/src/gamedaybot
     environment:
-      #Bot ID from the GroupMe developers page (REQUIRED IF USING GROUPME)
-      BOT_ID: "<secret>"
-      LEAGUE_ID:
+      BOT_ID: ${BOT_ID}
+      LEAGUE_ID: ${LEAGUE_ID}
+      ESPN_S2: ${ESPN_S2}
+      SWID: ${SWID} 
+      TEST: ${TEST}
