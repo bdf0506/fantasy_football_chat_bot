@@ -654,7 +654,7 @@ def optimal_team_scores(league, week=None, full_report=False):
             best_mgr_str = ['🤖 Best Managers: f{team_names} scored their optimal score!']
 
         worst = best_scores.popitem()
-        worst_mgr_str = ['🤡 Worst Manager: %s left %.2f points on their bench. Only scoring %.2f%% of their optimal score.' %
+        worst_mgr_str = ['🤡 Worst Manager: %s left %.2f points on their bench, only scoring %.2f%% of their optimal score.' %
                                                  (worst[0].team_name, worst[1][0] - worst[1][1], worst[1][3])]
         return (best_mgr_str + worst_mgr_str)
 
@@ -680,8 +680,6 @@ def get_achievers_trophy(league, week=None):
     box_scores = league.box_scores(week=week)
     over_achiever = ''
     under_achiever = ''
-    high_achiever_str = ['📈 Overachiever']
-    low_achiever_str = ['📉 Underachiever']
     best_performance = -9999
     worst_performance = 9999
     for i in box_scores:
@@ -767,9 +765,128 @@ def get_lucky_trophy(league, week=None):
             break
         wins += 1
 
-    lucky_str = ['🍀 Lucky: %s was %s against the league, but still got the win' % (lucky_team_name, lucky_record)]
+    lucky_str = ['🍀 Lucky: %s was %s against the league, and snuck in a win' % (lucky_team_name, lucky_record)]
     unlucky_str = ['😡 Unlucky: %s was %s against the league, but still took an L' % (unlucky_team_name, unlucky_record)]
     return (lucky_str + unlucky_str)
+
+def get_mvp_lvp(league, week=None):
+    """
+    Returns trophies for Most Valuable Player, Most Valuable Defense, Least Valuable Player and Least Valuable Defense.
+    D/ST is NOT included in the MVP/LVP trophy and has been separated out, due to defenses skewing the MVP/LVP trophies.
+
+    Parameters
+    ----------
+    league : object
+        The league object for which the trophies are to be returned
+    week : int, optional
+        The week for which the trophies are to be returned (default is current week)
+
+    Returns
+    -------
+    str
+        A string representing the trophies
+    """
+ 
+    # Gets trophies for week MVP, MVD, LVP & LVD
+    matchups = league.box_scores(week=week)
+
+    mvp_score_diff = -100
+    mvp_proj = -100
+    mvp_score = ''
+    mvp = ''
+    mvp_team = -1
+
+    mvd_score_diff = -100
+    mvd_proj = -100
+    mvd_score = ''
+    mvd = ''
+    mvd_team = -1
+
+    lvp_score_diff = 999
+    lvp_proj = 999
+    lvp_score = ''
+    lvp = ''
+    lvp_team = -1
+
+    lvd_score_diff = 999
+    lvd_proj = 999
+    lvd_score = ''
+    lvd = ''
+    lvd_team = -1
+
+    for i in matchups:
+        for p in i.home_lineup:
+            if p.slot_position != 'BE' and p.slot_position != 'D/ST' and p.slot_position != 'IR' and p.projected_points > 0:
+                score_diff = (p.points - p.projected_points)/p.projected_points
+                proj_diff = p.points - p.projected_points
+                if (score_diff > mvp_score_diff) or (score_diff == mvp_score_diff and proj_diff > mvp_proj):
+                    mvp_score_diff = score_diff
+                    mvp_proj = proj_diff
+                    mvp_score = '%.2f points (%.2f proj)' % (p.points, p.projected_points)
+                    mvp = p.position + ' ' + p.name
+                    mvp_team = i.home_team
+                elif (score_diff < lvp_score_diff) or (score_diff == lvp_score_diff and proj_diff < lvp_proj):
+                    lvp_score_diff = score_diff
+                    lvp_proj = proj_diff
+                    lvp_score = '%.2f points (%.2f proj)' % (p.points, p.projected_points)
+                    lvp = p.position + ' ' + p.name
+                    lvp_team = i.home_team
+        for p in i.away_lineup:
+            if p.slot_position != 'BE' and p.slot_position != 'D/ST' and p.slot_position != 'IR' and p.projected_points > 0:
+                score_diff = (p.points - p.projected_points)/p.projected_points
+                proj_diff = p.points - p.projected_points
+                if (score_diff > mvp_score_diff) or (score_diff == mvp_score_diff and proj_diff > mvp_proj):
+                    mvp_score_diff = score_diff
+                    mvp_proj = proj_diff
+                    mvp_score = '%.2f points (%.2f proj)' % (p.points, p.projected_points)
+                    mvp = p.position + ' ' + p.name
+                    mvp_team = i.away_team
+                elif (score_diff < lvp_score_diff) or (score_diff == lvp_score_diff and proj_diff < lvp_proj):
+                    lvp_score_diff = score_diff
+                    lvp_proj = proj_diff
+                    lvp_score = '%.2f points (%.2f proj)' % (p.points, p.projected_points)
+                    lvp = p.position + ' ' + p.name
+                    lvp_team = i.away_team
+
+        for p in i.home_lineup:
+            if p.slot_position == 'D/ST' and p.projected_points > 0:
+                score_diff = (p.points - p.projected_points)/p.projected_points
+                proj_diff = p.points - p.projected_points
+                if (score_diff > mvd_score_diff) or (score_diff == mvd_score_diff and proj_diff > mvd_proj):
+                    mvd_score_diff = score_diff
+                    mvd_proj = proj_diff
+                    mvd_score = '%.0f points (%.2f proj)' % (p.points, p.projected_points)
+                    mvd = p.name
+                    mvd_team = i.home_team
+                elif (score_diff < lvd_score_diff) or (score_diff == lvd_score_diff and proj_diff < lvd_proj):
+                    lvd_score_diff = score_diff
+                    lvd_proj = proj_diff
+                    lvd_score = '%.0f points (%.2f proj)' % (p.points, p.projected_points)
+                    lvd = p.name
+                    lvd_team = i.home_team
+        for p in i.away_lineup:
+            if p.slot_position == 'D/ST' and p.projected_points > 0:
+                score_diff = (p.points - p.projected_points)/p.projected_points
+                proj_diff = p.points - p.projected_points
+                if (score_diff > mvd_score_diff) or (score_diff == mvd_score_diff and proj_diff > mvd_proj):
+                    mvd_score_diff = score_diff
+                    mvd_proj = proj_diff
+                    mvd_score = '%.0f points (%.2f proj)' % (p.points, p.projected_points)
+                    mvd = p.name
+                    mvd_team = i.away_team
+                elif (score_diff < lvd_score_diff) or (score_diff == lvd_score_diff and proj_diff < lvd_proj):
+                    lvd_score_diff = score_diff
+                    lvd_proj = proj_diff
+                    lvd_score = '%.0f points (%.2f proj)' % (p.points, p.projected_points)
+                    lvd = p.name
+                    lvd_team = i.away_team
+
+    mvp_str = ['💯 MVP: %s, %s with %s' % (mvp, mvp_team.team_abbrev, mvp_score)]
+    mvd_str = ['✅ MVD: %s, %s with %s' % (mvd, mvd_team.team_abbrev, mvd_score)]
+    lvp_str = ['💀 LVP: %s, %s with %s' % (lvp, lvp_team.team_abbrev, lvp_score)]
+    lvd_str = ['🔴 LVD: %s, %s with %s' % (lvd, lvd_team.team_abbrev, lvd_score)]
+   
+    return (mvp_str + lvp_str + mvd_str + lvd_str)
 
 
 def get_trophies(league, week=None):
@@ -842,6 +959,7 @@ def get_trophies(league, week=None):
     close_score_str = ['😅 Close win: %s barely beat %s by %.2f points' % (close_winner, close_loser, closest_score)]
     blowout_str = ['😱 Blow out: %s blew out %s by %.2f points' % (ownerer_team_name, blown_out_team_name, biggest_blowout)]
 
-    text = ['Trophies of the week:'] + high_score_str + low_score_str + blowout_str + close_score_str + \
-        get_lucky_trophy(league, week) + get_achievers_trophy(league, week) + optimal_team_scores(league, week)
+    text = ['🏆 Trophies of the week: 🏆'] + high_score_str + low_score_str + blowout_str + close_score_str + \
+        get_lucky_trophy(league, week) + get_achievers_trophy(league, week) + get_mvp_lvp(league, week) + \
+        optimal_team_scores(league, week)
     return '\n'.join(text)
