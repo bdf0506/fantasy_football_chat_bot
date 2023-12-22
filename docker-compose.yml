@@ -1,17 +1,9 @@
-version: "3.7"
+version: "4.0"
 
 services:
   gamedaybot:
     container_name: fantasy_bot
-    build:
-      context: .
+    build: .
     volumes:
       - ./:/usr/src/gamedaybot
-    environment:
-      BOT_ID: ${BOT_ID}
-      LEAGUE_YEAR: ${LEAGUE_YEAR}
-      LEAGUE_ID: ${LEAGUE_ID}
-      ESPN_S2: ${ESPN_S2}
-      SWID: ${SWID} 
-      TEST: ${TEST}
-      REPORT_URL: ${REPORT_URL}
+    env_file: .env
