@@ -88,7 +88,6 @@ def espn_bot(function):
         else:
            week = league.current_week - 1
            header = "🏈 Week %s Results 🏈" % week + "\n\n"
-        week = 12
         report_url = os.environ["REPORT_URL"]
         scores = espn.get_scoreboard_short(league, week=week) + "\n\n"
         trophies = espn.get_trophies(league, week=week)

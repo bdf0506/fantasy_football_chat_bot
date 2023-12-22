@@ -9,6 +9,7 @@ services:
       - ./:/usr/src/gamedaybot
     environment:
       BOT_ID: ${BOT_ID}
+      LEAGUE_YEAR: ${LEAGUE_YEAR}
       LEAGUE_ID: ${LEAGUE_ID}
       ESPN_S2: ${ESPN_S2}
       SWID: ${SWID} 
