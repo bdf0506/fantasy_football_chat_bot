@@ -648,13 +648,13 @@ def optimal_team_scores(league, week=None, full_report=False):
 
         if num_teams <= 1:
             best = next(iter(best_scores.items()))
-            best_mgr_str = ['🤖 Best Manager 🤖'] + ['%s scored %.2f%% of their optimal score!' % (best[0].team_name, best[1][3])]
+            best_mgr_str = ['🤖 Best Manager: %s scored %.2f%% of their optimal score!' % (best[0].team_name, best[1][3])]
         else:
             team_names = team_names[:-2]
-            best_mgr_str = ['🤖 Best Managers 🤖'] + [f'{team_names} scored their optimal score!']
+            best_mgr_str = ['🤖 Best Managers: f{team_names} scored their optimal score!']
 
         worst = best_scores.popitem()
-        worst_mgr_str = ['🤡 Worst Manager 🤡'] + ['%s left %.2f points on their bench. Only scoring %.2f%% of their optimal score.' %
+        worst_mgr_str = ['🤡 Worst Manager: %s left %.2f points on their bench. Only scoring %.2f%% of their optimal score.' %
                                                  (worst[0].team_name, worst[1][0] - worst[1][1], worst[1][3])]
         return (best_mgr_str + worst_mgr_str)
 
@@ -680,8 +680,8 @@ def get_achievers_trophy(league, week=None):
     box_scores = league.box_scores(week=week)
     over_achiever = ''
     under_achiever = ''
-    high_achiever_str = ['📈 Overachiever 📈']
-    low_achiever_str = ['📉 Underachiever 📉']
+    high_achiever_str = ['📈 Overachiever']
+    low_achiever_str = ['📉 Underachiever']
     best_performance = -9999
     worst_performance = 9999
     for i in box_scores:
@@ -704,14 +704,14 @@ def get_achievers_trophy(league, week=None):
                 under_achiever = i.away_team.team_name
 
     if best_performance > 0:
-        high_achiever_str += ['%s was %.2f points over their projection' % (over_achiever, best_performance)]
+        high_achiever_str = ['📈 Overachiever: %s was %.2f points over their projection' % (over_achiever, best_performance)]
     else:
-        high_achiever_str += ['No team out performed their projection']
+        high_achiever_str = ['📈 Overachiever: No team out performed their projection']
 
     if worst_performance < 0:
-        low_achiever_str += ['%s was %.2f points under their projection' % (under_achiever, abs(worst_performance))]
+        low_achiever_str = ['📉 Underachiever: %s was %.2f points under their projection' % (under_achiever, abs(worst_performance))]
     else:
-        low_achiever_str += ['No team was worse than their projection']
+        low_achiever_str = ['📉 Underachiever: No team was worse than their projection']
 
     return (high_achiever_str + low_achiever_str)
 
@@ -767,8 +767,8 @@ def get_lucky_trophy(league, week=None):
             break
         wins += 1
 
-    lucky_str = ['🍀 Lucky 🍀'] + ['%s was %s against the league, but still got the win' % (lucky_team_name, lucky_record)]
-    unlucky_str = ['😡 Unlucky 😡'] + ['%s was %s against the league, but still took an L' % (unlucky_team_name, unlucky_record)]
+    lucky_str = ['🍀 Lucky: %s was %s against the league, but still got the win' % (lucky_team_name, lucky_record)]
+    unlucky_str = ['😡 Unlucky: %s was %s against the league, but still took an L' % (unlucky_team_name, unlucky_record)]
     return (lucky_str + unlucky_str)
 
 
@@ -837,10 +837,10 @@ def get_trophies(league, week=None):
                     ownerer_team_name = i.away_team.team_name
                     blown_out_team_name = i.home_team.team_name
 
-    high_score_str = ['👑 High score 👑'] + ['%s with %.2f points' % (high_team_name, high_score)]
-    low_score_str = ['💩 Low score 💩'] + ['%s with %.2f points' % (low_team_name, low_score)]
-    close_score_str = ['😅 Close win 😅'] + ['%s barely beat %s by %.2f points' % (close_winner, close_loser, closest_score)]
-    blowout_str = ['😱 Blow out 😱'] + ['%s blew out %s by %.2f points' % (ownerer_team_name, blown_out_team_name, biggest_blowout)]
+    high_score_str = ['👑 Highest score: %s with %.2f points' % (high_team_name, high_score)]
+    low_score_str = ['💩 Lowest score: %s with %.2f points' % (low_team_name, low_score)]
+    close_score_str = ['😅 Close win: %s barely beat %s by %.2f points' % (close_winner, close_loser, closest_score)]
+    blowout_str = ['😱 Blow out: %s blew out %s by %.2f points' % (ownerer_team_name, blown_out_team_name, biggest_blowout)]
 
     text = ['Trophies of the week:'] + high_score_str + low_score_str + blowout_str + close_score_str + \
         get_lucky_trophy(league, week) + get_achievers_trophy(league, week) + optimal_team_scores(league, week)
