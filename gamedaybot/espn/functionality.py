@@ -963,3 +963,150 @@ def get_trophies(league, week=None):
         get_lucky_trophy(league, week) + get_achievers_trophy(league, week) + get_mvp_lvp(league, week) + \
         optimal_team_scores(league, week)
     return '\n'.join(text)
+
+def season_trophies(league):
+    """
+    Returns trophies for the season.
+
+    Parameters
+    ----------
+    league : object
+        The league object for which the trophies are to be returned
+
+    Returns
+    -------
+    str
+        A string representing the trophies
+    """
+
+    mvp_score_diff = -100
+    mvp_proj = -100
+    mvp_score = ''
+    mvp = ''
+    mvp_team = -1
+    mvp_week = 0
+
+    smvp_score_diff = -100
+    smvp_proj = -100
+    smvp_score = ''
+    smvp = ''
+    smvp_team = -1
+
+    lvp_score_diff = 999
+    lvp_proj = 999
+    lvp_score = ''
+    lvp = ''
+    lvp_team = -1
+    lvp_week = 0
+
+    slvp_score_diff = 999
+    slvp_proj = 999
+    slvp_score = ''
+    slvp = ''
+    slvp_team = -1
+
+    most_moves = 0
+    moves_score = ''
+    moves_team = -1
+
+    high_score = 0
+    score_team = 0
+    score_week = 0
+
+    low_score = 9999
+    low_team = 0
+    low_week = 0
+
+    for team in league.teams:
+        moves = team.acquisitions + team.drops + team.trades
+        if moves > most_moves:
+            most_moves = moves
+            moves_score = '%d total moves (%d adds, %d drops, %d trades)' % (
+                moves, team.acquisitions, team.drops, team.trades)
+            moves_team = team
+
+        for score in team.scores:
+            if score > high_score:
+                high_score = score
+                score_team = team
+                score_week = team.scores.index(score)
+            if score < low_score:
+                low_score = score
+                low_team = team
+                low_week = team.scores.index(score)
+
+        for p in team.roster:
+            if p.projected_total_points > 0:
+                score_diff = (p.total_points - p.projected_total_points)/p.projected_total_points
+                proj_diff = p.total_points - p.projected_total_points
+                if (score_diff > smvp_score_diff) or (score_diff == smvp_score_diff and proj_diff > smvp_proj):
+                    smvp_score_diff = score_diff
+                    smvp_proj = proj_diff
+                    smvp_score = '%.2f points (%.2f proj)' % (p.total_points, p.projected_total_points)
+                    smvp = p.position + ' ' + p.name
+                    smvp_team = team
+                elif (score_diff < slvp_score_diff) or (score_diff == slvp_score_diff and proj_diff < slvp_proj):
+                    slvp_score_diff = score_diff
+                    slvp_proj = proj_diff
+                    slvp_score = '%.2f points (%.2f proj)' % (p.total_points, p.projected_total_points)
+                    slvp = p.position + ' ' + p.name
+                    slvp_team = team
+
+    z = 1
+    while z <= 18:
+        matchups = league.box_scores(week=z)
+        for i in matchups:
+            for p in i.home_lineup:
+                if p.slot_position != 'BE' and p.slot_position != 'IR' and p.position != 'D/ST' and p.projected_points > 0:
+                    score_diff = (p.points - p.projected_points)/p.projected_points
+                    proj_diff = p.points - p.projected_points
+                    if (score_diff > mvp_score_diff) or (score_diff == mvp_score_diff and proj_diff > mvp_proj):
+                        if p.projected_points > 0.1:
+                            mvp_score_diff = score_diff
+                            mvp_proj = proj_diff
+                            mvp_score = '%.2f points (%.2f proj)' % (p.points, p.projected_points)
+                            mvp = p.position + ' ' + p.name
+                            mvp_team = i.home_team
+                            mvp_week = z
+                    elif (score_diff < lvp_score_diff) or (score_diff == lvp_score_diff and proj_diff < lvp_proj):
+                        if p.position != 'K':
+                            lvp_score_diff = score_diff
+                            lvp_proj = proj_diff
+                            lvp_score = '%.2f points (%.2f proj)' % (p.points, p.projected_points)
+                            lvp = p.position + ' ' + p.name
+                            lvp_team = i.home_team
+                            lvp_week = z
+
+            for p in i.away_lineup:
+                if p.slot_position != 'BE' and p.slot_position != 'IR' and p.position != 'D/ST' and p.projected_points > 0:
+                    score_diff = (p.points - p.projected_points)/p.projected_points
+                    proj_diff = p.points - p.projected_points
+                    if (score_diff > mvp_score_diff) or (score_diff == mvp_score_diff and proj_diff > mvp_proj):
+                        if p.projected_points > 0.1:
+                            mvp_score_diff = score_diff
+                            mvp_proj = proj_diff
+                            mvp_score = '%.2f points (%.2f proj)' % (p.points, p.projected_points)
+                            mvp = p.position + ' ' + p.name
+                            mvp_team = i.away_team
+                            mvp_week = z
+                    elif (score_diff < lvp_score_diff) or (score_diff == lvp_score_diff and proj_diff < lvp_proj):
+                        if p.position != 'K':
+                            lvp_score_diff = score_diff
+                            lvp_proj = proj_diff
+                            lvp_score = '%.2f points (%.2f proj)' % (p.points, p.projected_points)
+                            lvp = p.position + ' ' + p.name
+                            lvp_team = i.away_team
+                            lvp_week = z
+        z = z+1
+
+    moves_str = ['🔄 Most Moves: %s with %s' % (moves_team.team_name, moves_score)]
+    high_score_str = ['⭐ Highest Score: %s with %.2f points on Week %d' % (score_team.team_name, high_score, score_week)]
+    low_score_str = ['💩 Lowest Score: %s with %.2f points on Week %d' % (low_team.team_name, low_score, low_week)]
+    mvp_str = ['✅ Best Performance: %s, Week %d, %s with %s' % (mvp, mvp_week, mvp_team.team_abbrev, mvp_score)]
+    lvp_str = ['🔴 Worst Performance: %s, Week %d, %s with %s' % (lvp, lvp_week, lvp_team.team_abbrev, lvp_score)]
+    smvp_str = ['💯 Season MVP: %s, %s with %s' % (smvp, smvp_team.team_abbrev, smvp_score)]
+    slvp_str = ['💀 Season LVP: %s, %s with %s' % (slvp, slvp_team.team_abbrev, slvp_score)]
+
+    text = ['🏆🏆 End of Season Awards 🏆🏆'] + moves_str + high_score_str + low_score_str + mvp_str + lvp_str + smvp_str + slvp_str + [' ']
+
+    return '\n'.join(text)

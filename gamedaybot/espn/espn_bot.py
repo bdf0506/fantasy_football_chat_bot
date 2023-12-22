@@ -48,6 +48,7 @@ def espn_bot(function):
         if waiver_report and swid != '{1}' and espn_s2 != '1':
             print(espn.get_waiver_report(league, faab))
         print(espn.get_trophies(league))
+        #print(espn.season_trophies(league))
         # bot.send_message("Testing")
         # slack_bot.send_message("Testing")
         # discord_bot.send_message("Testing")
