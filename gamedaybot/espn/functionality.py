@@ -24,7 +24,11 @@ def get_scoreboard_short(league, week=None):
     score = ['%4s %6.2f - %6.2f %s' % (i.home_team.team_abbrev, i.home_score,
                                        i.away_score, i.away_team.team_abbrev) for i in box_scores
              if i.away_team]
-    text = ['Score Update'] + score
+    if (week == league.current_week - 1 or week == 16):
+        text = ['📋 Final Score Update 📋']
+    else:
+        text = ['📋 Score Update 📋']
+    text += score
     return '\n'.join(text)
 
 
@@ -79,7 +83,11 @@ def get_standings(league, top_half_scoring=False, week=None):
     standings = []
     if not top_half_scoring:
         standings = league.standings()
-        standings_txt = [f"{pos + 1:2}: ({team.wins}-{team.losses}) {team.team_name} " for
+        if (week <= 13):
+            standings_txt = [f"{pos + 1:2}: ({team.wins}-{team.losses}) {team.team_name} ({str(round(team.playoff_pct,2))}%)" for
+                         pos, team in enumerate(standings)]
+        elif (week >= 14):
+            standings_txt = [f"{pos + 1:2}: {team.team_name}" for
                          pos, team in enumerate(standings)]
     else:
         # top half scoring can be enabled by default in ESPN now.
@@ -97,8 +105,12 @@ def get_standings(league, top_half_scoring=False, week=None):
         standings = sorted(standings, key=lambda tup: tup[0], reverse=True)
         standings_txt = [f"{pos + 1:2}: {team_name} ({wins}-{losses}) (+{top_half_totals[team_name]})" for
                          pos, (wins, losses, team_name) in enumerate(standings)]
-    text = ["Current Standings"] + standings_txt
-
+    if (week <= 13):
+       text = ["💯 Current Standings (Playoff %) 💯"] + standings_txt
+    if (week >= 14 and week <= 15):
+       text = ["💯 Current Standings 💯"] + standings_txt
+    elif (week >= 16):
+       text = ["💯 Final Standings 💯"] + standings_txt
     return "\n".join(text)
 
 

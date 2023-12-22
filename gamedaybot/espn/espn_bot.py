@@ -80,6 +80,28 @@ def espn_bot(function):
     elif function == "get_waiver_report" and swid != '{1}' and espn_s2 != '1':
         faab = league.settings.faab
         text = espn.get_waiver_report(league, faab)
+    elif function == "weekly_summary":
+        # on week 16, need to use week 16 and not the last week.
+        if (league.current_week > 16):
+           week = 16
+           header = "🏈 Season Final Results 🏈" + "\n\n"
+        else:
+           week = league.current_week - 1
+           header = "🏈 Week %s Results 🏈" % week + "\n\n"
+        week = 12
+        report_url = os.environ["REPORT_URL"]
+        scores = espn.get_scoreboard_short(league, week=week) + "\n\n"
+        trophies = espn.get_trophies(league, week=week)
+        standings = espn.get_standings(league, week=week) + "\n\n"
+        if (week >= 16):
+           season_trophies = espn.season_trophies(league)
+        # only include Fantasy report URL prior to playoffs, as once league goes into playoffs, report dies.
+        if (week <= 13):
+           text = header + scores + standings + trophies + "\n\n" + "Full Fantasy report: " + report_url
+        elif (week >= 14 and week <= 15):
+           text = header + scores + trophies
+        elif (week >= 16):
+           text = header + scores + standings + trophies + "\n\n" + season_trophies
     elif function == "init":
         try:
             text = data["init_msg"]
@@ -95,7 +117,7 @@ def espn_bot(function):
             bot.send_message(message)
             slack_bot.send_message(message)
             discord_bot.send_message(message)
-
+            print(message)
 
 if __name__ == '__main__':
-    espn_bot("get_final")
+    espn_bot("weekly_summary")
